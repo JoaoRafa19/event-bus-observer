@@ -4,7 +4,10 @@ import "event-bus/internal"
 
 func main() {
 
-	bus := internal.NewBus[string]()
+	bus, err := internal.NewBus[string](5000)
+	if err != nil {
+		panic(err)
+	}
 
 	sub := bus.Subscribe("topic1")
 

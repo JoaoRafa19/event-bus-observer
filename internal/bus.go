@@ -1,17 +1,41 @@
 package internal
 
-import "sync"
+import (
+	"fmt"
+	"net"
+	"sync"
+)
 
 type Bus[T any] struct {
 	mu sync.RWMutex
 
-	topcis map[any][]chan T
+	topcis   map[any][]chan T
+	listener net.Listener
 }
 
-func NewBus[T any]() *Bus[T] {
-	return &Bus[T]{
+func NewBus[T any](port int) (*Bus[T], error) {
+	b := &Bus[T]{
 		topcis: make(map[any][]chan T),
 	}
+
+	var err error
+
+	b.listener, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return nil, err
+	}
+
+	go b.handleConnections()
+	return b, nil
+
+}
+
+func (b *Bus[T]) Close() error {
+	return nil
+}
+
+func (b *Bus[T]) handleConnections() {
+
 }
 
 func (b *Bus[T]) Publish(topic any, event T) {
